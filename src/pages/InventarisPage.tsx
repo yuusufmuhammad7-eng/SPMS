@@ -278,7 +278,16 @@ export function InventarisPage() {
       <ConfirmDialog
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
-        onConfirm={() => { if (deleteId) { deleteAset(deleteId); pushToast('Data berhasil dihapus.'); } }}
+        onConfirm={async () => {
+          if (!deleteId) return;
+          const err = await deleteAset(deleteId);
+          if (err) {
+            pushToast(`Gagal menghapus aset: ${err}`, 'error');
+          } else {
+            pushToast('Data aset berhasil dihapus.');
+          }
+          setDeleteId(null);
+        }}
         title="Hapus Aset"
         message="Apakah Anda yakin ingin menghapus data aset ini? Tindakan ini tidak dapat dibatalkan."
         confirmText="Hapus"

@@ -13,7 +13,7 @@ import { kpiSeed } from '@/data/kpi';
 import { sopSeed } from '@/data/sop';
 import { aktivitasSeed } from '@/data/activities';
 import { generateId } from '@/utils/format';
-import { getAssets, createAsset, updateAsset } from '@/api/assets';
+import { getAssets, createAsset, updateAsset, deleteAsset } from '@/api/assets';
 import { getMasterData } from '@/api/masterData';
 import type { MasterData } from '@/api/masterData';
 
@@ -44,7 +44,7 @@ interface AppState {
   // CRUD generic
   addAset: (a: Omit<Aset, 'id'>) => Promise<string | null>;
   updateAset: (id: string, a: Omit<Aset, 'id'>) => Promise<string | null>;
-  deleteAset: (id: string) => void;
+  deleteAset: (id: string) => Promise<string | null>;
   addKendaraan: (k: Omit<Kendaraan, 'id'>) => void;
   updateKendaraan: (id: string, k: Partial<Kendaraan>) => void;
   deleteKendaraan: (id: string) => void;
@@ -202,11 +202,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [pushAktivitas, touch, fetchAset]);
 
-  const deleteAset = useCallback((id: string) => {
-    setAset(prev => prev.filter(item => item.id !== id));
-    pushAktivitas('aset', 'Aset dihapus', `Aset dihapus dari inventaris`);
-    touch();
-  }, [pushAktivitas, touch]);
+  const deleteAset = useCallback(async (id: string): Promise<string | null> => {
+    setAsetSaving(true);
+    try {
+      await deleteAsset(id);
+      pushAktivitas('aset', 'Aset dihapus', `Aset dihapus dari inventaris`);
+      touch();
+      await fetchAset();
+      return null;
+    } catch (err) {
+      return err instanceof Error ? err.message : 'Gagal menghapus aset';
+    } finally {
+      setAsetSaving(false);
+    }
+  }, [pushAktivitas, touch, fetchAset]);
 
   const addKendaraan = useCallback((k: Omit<Kendaraan, 'id'>) => {
     setKendaraan(prev => [{ ...k, id: generateId('ken') }, ...prev]);

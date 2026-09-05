@@ -16,6 +16,10 @@ export async function updateAsset(id: string, data: Omit<Aset, 'id'>): Promise<u
   return apiPost('updateAsset', { id, ...payload });
 }
 
+export async function deleteAsset(id: string): Promise<unknown> {
+  return apiPost('deleteAsset', { id });
+}
+
 function normalizeAsset(raw: Record<string, unknown>): Aset {
   return {
     id: String(raw.id ?? raw.ID ?? ''),
