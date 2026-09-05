@@ -296,34 +296,37 @@ function AsetFormModal({ editing, saving, masterData, masterDataLoading, masterD
   onClose: () => void;
   onSave: (data: Omit<Aset, 'id'>) => void;
 }) {
-  const kategoriOptions = masterData?.Kategori ?? [...kategoriAset];
-  const subKategoriOptions = masterData?.['Sub Kategori'] ?? [];
-  const lokasiOptions = masterData?.Lokasi ?? [...lokasiAset];
-  const picOptions = masterData?.PIC ?? [];
-  const satuanOptions = masterData?.Satuan ?? [];
-  const kondisiOpts = masterData?.Kondisi ?? [];
-  const statusOpts = masterData?.['Status Aset'] ?? [];
-  const sumberOpts = masterData?.['Sumber Perolehan'] ?? [];
+  const withCurrent = (opts: string[], current?: string): string[] =>
+    current && !opts.includes(current) ? [...opts, current] : opts;
+
+  const kategoriOptions = withCurrent(masterData?.Kategori ?? [...kategoriAset], editing?.kategori);
+  const subKategoriOptions = withCurrent(masterData?.['Sub Kategori'] ?? [], editing?.subKategori);
+  const lokasiOptions = withCurrent(masterData?.Lokasi ?? [...lokasiAset], editing?.lokasi);
+  const picOptions = withCurrent(masterData?.PIC ?? [], editing?.pic);
+  const satuanOptions = withCurrent(masterData?.Satuan ?? [], editing?.satuan);
+  const kondisiOpts = withCurrent(masterData?.Kondisi ?? [], editing?.kondisi);
+  const statusOpts = withCurrent(masterData?.['Status Aset'] ?? [], editing?.statusAset);
+  const sumberOpts = withCurrent(masterData?.['Sumber Perolehan'] ?? [], editing?.sumberPerolehan);
 
   const [form, setForm] = useState<Omit<Aset, 'id'>>({
-    kodeAset: editing?.kodeAset || `AST-${Date.now().toString().slice(-6)}`,
-    namaAset: editing?.namaAset || '',
-    kategori: editing?.kategori || kategoriOptions[0] || '',
-    subKategori: editing?.subKategori || '',
-    merek: editing?.merek || '',
-    tipe: editing?.tipe || '',
-    nomorSeri: editing?.nomorSeri || '',
-    lokasi: editing?.lokasi || lokasiOptions[0] || '',
-    pic: editing?.pic || '',
-    jumlah: editing?.jumlah || 1,
-    satuan: editing?.satuan || satuanOptions[0] || 'Unit',
-    kondisi: editing?.kondisi || kondisiOpts[0] || 'Baik',
-    statusAset: editing?.statusAset || statusOpts[0] || 'Aktif',
-    tahunPembelian: editing?.tahunPembelian || new Date().getFullYear(),
-    tanggalPembelian: editing?.tanggalPembelian || new Date().toISOString().slice(0, 10),
-    nilaiAset: editing?.nilaiAset || 0,
-    sumberPerolehan: editing?.sumberPerolehan || sumberOpts[0] || 'Pembelian',
-    keterangan: editing?.keterangan || '',
+    kodeAset: editing?.kodeAset ?? `AST-${Date.now().toString().slice(-6)}`,
+    namaAset: editing?.namaAset ?? '',
+    kategori: editing?.kategori ?? kategoriOptions[0] ?? '',
+    subKategori: editing?.subKategori ?? '',
+    merek: editing?.merek ?? '',
+    tipe: editing?.tipe ?? '',
+    nomorSeri: editing?.nomorSeri ?? '',
+    lokasi: editing?.lokasi ?? lokasiOptions[0] ?? '',
+    pic: editing?.pic ?? '',
+    jumlah: editing?.jumlah ?? 1,
+    satuan: editing?.satuan ?? satuanOptions[0] ?? 'Unit',
+    kondisi: editing?.kondisi ?? kondisiOpts[0] ?? 'Baik',
+    statusAset: editing?.statusAset ?? statusOpts[0] ?? 'Aktif',
+    tahunPembelian: editing?.tahunPembelian ?? new Date().getFullYear(),
+    tanggalPembelian: (editing?.tanggalPembelian ?? new Date().toISOString()).slice(0, 10),
+    nilaiAset: editing?.nilaiAset ?? 0,
+    sumberPerolehan: editing?.sumberPerolehan ?? sumberOpts[0] ?? 'Pembelian',
+    keterangan: editing?.keterangan ?? '',
   });
 
   const set = (key: keyof typeof form, val: string | number) => setForm(f => ({ ...f, [key]: val }));

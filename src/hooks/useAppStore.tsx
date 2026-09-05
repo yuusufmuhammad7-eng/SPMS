@@ -185,6 +185,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [pushAktivitas, touch, fetchAset]);
 
   const updateAset = useCallback(async (id: string, a: Omit<Aset, 'id'>): Promise<string | null> => {
+    if (!id) {
+      return 'Aset ini tidak memiliki ID dari server. Data yang dimasukkan manual ke Google Sheets tidak dapat diperbarui dari aplikasi.';
+    }
     setAsetSaving(true);
     try {
       await updateAsset(id, a);

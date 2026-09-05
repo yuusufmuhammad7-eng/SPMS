@@ -27,7 +27,6 @@ export async function apiGet<T>(action: string): Promise<T> {
 }
 
 export async function apiPost<T>(action: string, data: unknown): Promise<T> {
-  console.log('[apiPost] Request:', { action, data });
   const res = await fetch(API_BASE_URL, {
     method: 'POST',
     redirect: 'follow',
@@ -38,11 +37,10 @@ export async function apiPost<T>(action: string, data: unknown): Promise<T> {
     throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   }
   const json: ApiResponse<T> = await res.json();
-  console.log('[apiPost] Response:', JSON.stringify(json));
   if (!json.success) {
     const raw = json as unknown as Record<string, unknown>;
     const errMsg = raw.message || raw.error || 'No error details provided';
-    throw new Error(`API returned success: false — ${errMsg}`);
+    throw new Error(errMsg as string);
   }
   return json.data;
 }
