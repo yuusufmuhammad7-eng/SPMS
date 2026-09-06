@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   Package, Wallet, Car, Wrench, FileText, FolderKanban, Target,
   TrendingUp, Plus, Search, Activity,
@@ -25,12 +25,18 @@ const COLORS = {
 const CATEGORY_COLORS = ['#3366ff', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1'];
 
 export function DashboardPage() {
-  const { aset, kendaraan, maintenance, pengajuan, proyek, rka, kpi, aktivitas, lastUpdated, widgets } = useApp();
+  const { aset, asetLoading, asetError, fetchAset, kendaraan, maintenance, pengajuan, proyek, rka, kpi, aktivitas, lastUpdated, widgets } = useApp();
   const { navigate } = useRouter();
 
+  useEffect(() => {
+    fetchAset();
+  }, [fetchAset]);
+
   const stats = useMemo(() => {
-    const totalAset = aset.reduce((s, a) => s + a.jumlah, 0);
-    const nilaiAset = aset.reduce((s, a) => s + a.nilaiAset * a.jumlah, 0);
+    const totalAset = aset.length;
+    const validNilai = aset.filter(a => !isNaN(a.nilaiAset) && a.nilaiAset > 0);
+    const nilaiAset = validNilai.reduce((s, a) => s + a.nilaiAset, 0);
+    const asetTanpaNilai = aset.length - validNilai.length;
     const kendaraanAktif = kendaraan.filter(k => k.status !== 'Tidak Aktif').length;
     const maintenanceAktif = maintenance.filter(m => m.status === 'Menunggu' || m.status === 'Diproses').length;
     const pengajuanAktif = pengajuan.filter(p => p.status === 'Menunggu' || p.status === 'Diproses').length;
@@ -47,16 +53,16 @@ export function DashboardPage() {
 
     const kategoriCount: Record<string, number> = {};
     aset.forEach(a => {
-      kategoriCount[a.kategori] = (kategoriCount[a.kategori] || 0) + a.jumlah;
+      kategoriCount[a.kategori] = (kategoriCount[a.kategori] || 0) + 1;
     });
 
     const lokasiCount: Record<string, number> = {};
     aset.forEach(a => {
-      lokasiCount[a.lokasi] = (lokasiCount[a.lokasi] || 0) + a.jumlah;
+      lokasiCount[a.lokasi] = (lokasiCount[a.lokasi] || 0) + 1;
     });
 
     return {
-      totalAset, nilaiAset, kendaraanAktif, maintenanceAktif,
+      totalAset, nilaiAset, asetTanpaNilai, kendaraanAktif, maintenanceAktif,
       pengajuanAktif, proyekBerjalan, totalRKA, avgKPI,
       kondisiCount, kategoriCount, lokasiCount,
     };
@@ -96,9 +102,9 @@ export function DashboardPage() {
   const kpiWidgets = widgets.filter(w => w.visible && widgetMap[w.key]?.kpi);
   const chartWidgets = widgets.filter(w => w.visible && widgetMap[w.key]?.chart);
 
-  const kpiConfig: Record<string, { label: string; value: string; sub: string; icon: typeof Package; color: string; onClick?: () => void }> = {
-    totalAset: { label: 'Total Aset', value: stats.totalAset.toLocaleString('id-ID'), sub: 'Unit terdaftar', icon: Package, color: 'brand', onClick: () => navigate('/inventaris') },
-    nilaiAset: { label: 'Total Nilai Aset', value: formatRupiahShort(stats.nilaiAset), sub: formatRupiah(stats.nilaiAset), icon: Wallet, color: 'emerald', onClick: () => navigate('/inventaris') },
+  const kpiConfig: Record<string, { label: string; value: string; sub: string; info?: string; icon: typeof Package; color: string; onClick?: () => void }> = {
+    totalAset: { label: 'Total Aset', value: stats.totalAset.toLocaleString('id-ID'), sub: `${stats.totalAset} record terdaftar`, icon: Package, color: 'brand', onClick: () => navigate('/inventaris') },
+    nilaiAset: { label: 'Total Nilai Aset', value: formatRupiahShort(stats.nilaiAset), sub: formatRupiah(stats.nilaiAset), info: stats.asetTanpaNilai > 0 ? `${stats.asetTanpaNilai} aset belum memiliki nilai aset` : undefined, icon: Wallet, color: 'emerald', onClick: () => navigate('/inventaris') },
     kendaraan: { label: 'Kendaraan Operasional', value: String(stats.kendaraanAktif), sub: `${kendaraan.filter(k => k.status === 'Tersedia').length} tersedia`, icon: Car, color: 'blue', onClick: () => navigate('/kendaraan') },
     maintenance: { label: 'Maintenance Aktif', value: String(stats.maintenanceAktif), sub: `${maintenance.filter(m => m.prioritas === 'Urgent').length} urgent`, icon: Wrench, color: 'amber', onClick: () => navigate('/maintenance') },
     pengajuan: { label: 'Pengajuan Aktif', value: String(stats.pengajuanAktif), sub: `${pengajuan.filter(p => p.status === 'Menunggu').length} menunggu`, icon: FileText, color: 'pink', onClick: () => navigate('/pengajuan') },
@@ -186,6 +192,7 @@ export function DashboardPage() {
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide">{cfg.label}</p>
               <p className="text-2xl font-extrabold text-ink-900 mt-1 tracking-tight">{cfg.value}</p>
               <p className="text-xs text-ink-400 mt-1">{cfg.sub}</p>
+              {cfg.info && <p className="text-[10px] text-amber-600 font-medium mt-0.5">{cfg.info}</p>}
             </button>
           );
         })}
