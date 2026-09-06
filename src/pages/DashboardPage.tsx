@@ -33,7 +33,8 @@ export function DashboardPage() {
   }, [fetchAset]);
 
   const stats = useMemo(() => {
-    const totalAset = aset.length;
+    const totalAset = aset.reduce((s, a) => s + (!isNaN(a.jumlah) && a.jumlah > 0 ? a.jumlah : 0), 0);
+    const totalKodeAset = aset.length;
     const validNilai = aset.filter(a => !isNaN(a.nilaiAset) && a.nilaiAset > 0);
     const nilaiAset = validNilai.reduce((s, a) => s + a.nilaiAset, 0);
     const asetTanpaNilai = aset.length - validNilai.length;
@@ -62,7 +63,7 @@ export function DashboardPage() {
     });
 
     return {
-      totalAset, nilaiAset, asetTanpaNilai, kendaraanAktif, maintenanceAktif,
+      totalAset, totalKodeAset, nilaiAset, asetTanpaNilai, kendaraanAktif, maintenanceAktif,
       pengajuanAktif, proyekBerjalan, totalRKA, avgKPI,
       kondisiCount, kategoriCount, lokasiCount,
     };
@@ -103,7 +104,7 @@ export function DashboardPage() {
   const chartWidgets = widgets.filter(w => w.visible && widgetMap[w.key]?.chart);
 
   const kpiConfig: Record<string, { label: string; value: string; sub: string; info?: string; icon: typeof Package; color: string; onClick?: () => void }> = {
-    totalAset: { label: 'Total Aset', value: stats.totalAset.toLocaleString('id-ID'), sub: `${stats.totalAset} record terdaftar`, icon: Package, color: 'brand', onClick: () => navigate('/inventaris') },
+    totalAset: { label: 'Total Aset', value: stats.totalAset.toLocaleString('id-ID'), sub: `${stats.totalKodeAset} kode aset`, icon: Package, color: 'brand', onClick: () => navigate('/inventaris') },
     nilaiAset: { label: 'Total Nilai Aset', value: formatRupiahShort(stats.nilaiAset), sub: formatRupiah(stats.nilaiAset), info: stats.asetTanpaNilai > 0 ? `${stats.asetTanpaNilai} aset belum memiliki nilai aset` : undefined, icon: Wallet, color: 'emerald', onClick: () => navigate('/inventaris') },
     kendaraan: { label: 'Kendaraan Operasional', value: String(stats.kendaraanAktif), sub: `${kendaraan.filter(k => k.status === 'Tersedia').length} tersedia`, icon: Car, color: 'blue', onClick: () => navigate('/kendaraan') },
     maintenance: { label: 'Maintenance Aktif', value: String(stats.maintenanceAktif), sub: `${maintenance.filter(m => m.prioritas === 'Urgent').length} urgent`, icon: Wrench, color: 'amber', onClick: () => navigate('/maintenance') },
