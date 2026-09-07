@@ -4,25 +4,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from '@/hooks/useRouter';
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
   const { navigate } = useRouter();
-  const [email, setEmail] = useState('yusuf@idn.sch.id');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
-    setTimeout(() => {
-      if (login(email, password)) {
-        navigate('/dashboard');
-      } else {
-        setError('Email atau password salah.');
-      }
-      setLoading(false);
-    }, 500);
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Tidak dapat terhubung ke server.');
+    }
   };
 
   return (
@@ -106,9 +102,7 @@ export function LoginPage() {
           </form>
 
           <div className="mt-6 p-4 rounded-xl bg-ink-100/50 border border-ink-100">
-            <p className="text-xs font-semibold text-ink-600 mb-1">Akun Demo:</p>
-            <p className="text-xs text-ink-500">Email: yusuf@idn.sch.id</p>
-            <p className="text-xs text-ink-500">Password: admin123</p>
+            <p className="text-xs text-ink-500">Hanya Super Admin yang dapat membuat akun baru melalui menu User &amp; Role.</p>
           </div>
         </div>
       </div>
