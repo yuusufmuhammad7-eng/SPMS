@@ -151,9 +151,15 @@ export interface Aktivitas {
 }
 
 export interface User {
+  id: string;
   nama: string;
-  role: 'Super Admin' | 'Kepala Sarana Prasarana' | 'Staff';
   email: string;
+  role: string;
+  unit: string;
+  status: string;
+  passwordHash?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type WidgetKey =
