@@ -40,19 +40,19 @@ const routes: Record<string, () => JSX.Element> = {
 };
 
 function AppContent() {
-  const { path, navigate } = useRouter();
+  const { path, replace } = useRouter();
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!user && path !== '/login') {
-      navigate('/login');
+      replace('/login');
     }
     if (user && path === '/login') {
-      navigate('/dashboard');
+      replace('/dashboard');
     }
-  }, [user, path, navigate]);
+  }, [user, path, replace]);
 
   if (!user || path === '/login') {
     if (path === '/login' && user) return null;
@@ -73,7 +73,7 @@ function AppContent() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           onToggleMobile={() => setMobileOpen(o => !o)}
-          onLogout={() => { logout(); navigate('/login'); }}
+          onLogout={() => { logout(); replace('/login'); }}
         />
         <main className="flex-1 p-4 lg:p-6 max-w-[1600px] w-full mx-auto">
           {pageContent}

@@ -9,7 +9,12 @@ function loadSession(): AuthUser | null {
   const saved = sessionStorage.getItem(SESSION_KEY);
   if (!saved) return null;
   try {
-    return JSON.parse(saved) as AuthUser;
+    const u = JSON.parse(saved) as AuthUser;
+    if (u.status === 'Nonaktif') {
+      sessionStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return u;
   } catch {
     sessionStorage.removeItem(SESSION_KEY);
     return null;
@@ -24,6 +29,9 @@ export function useAuth() {
     setLoading(true);
     try {
       const u = await loginUser(email, password);
+      if (u.status === 'Nonaktif') {
+        throw new Error('Akun Anda sedang nonaktif. Silakan hubungi Super Admin.');
+      }
       setUser(u);
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(u));
     } finally {
