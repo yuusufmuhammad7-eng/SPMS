@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, RefreshCw, AlertCircle, Plus } from 'lucide-react';
 import { PageHeader, Card, Button, Input, Modal, Badge, EmptyState } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from '@/hooks/useRouter';
 import { useApp } from '@/hooks/useAppStore';
 import { getUsers, createUser } from '@/api/users';
 import type { CreateUserPayload } from '@/api/users';
@@ -22,8 +23,15 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function UsersPage() {
   const { user: currentUser } = useAuth();
+  const { replace } = useRouter();
   const { pushToast } = useApp();
   const isSuperAdmin = currentUser?.role === 'Super Admin';
+
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      replace('/dashboard');
+    }
+  }, [isSuperAdmin, replace]);
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,6 +63,10 @@ export function UsersPage() {
     const matchRole = !filterRole || u.role === filterRole;
     return matchSearch && matchRole;
   });
+
+  if (!isSuperAdmin) {
+    return null;
+  }
 
   const roleBadge = (role: string) => {
     if (role === 'Super Admin') return <Badge variant="brand">{role}</Badge>;

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, LogOut, ChevronDown, Menu, Search } from 'lucide-react';
 import { useApp } from '@/hooks/useAppStore';
+import { useAuth } from '@/hooks/useAuth';
 import { formatRelativeTime } from '@/utils/format';
 
 export function Header({
@@ -10,6 +11,13 @@ export function Header({
   onLogout: () => void;
 }) {
   const { aktivitas, lastUpdated } = useApp();
+  const { user } = useAuth();
+  const userInitials = (user?.nama ?? '?')
+    .split(' ')
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -84,11 +92,11 @@ export function Header({
             className="flex items-center gap-2.5 p-1.5 pr-3 rounded-lg hover:bg-ink-100 transition-colors"
           >
             <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-sm">
-              YT
+              {userInitials}
             </div>
             <div className="hidden md:block text-left">
-              <p className="text-xs font-bold text-ink-900 leading-tight">M. Yusuf Badru Tamam</p>
-              <p className="text-[10px] text-ink-400 leading-tight">Super Admin</p>
+              <p className="text-xs font-bold text-ink-900 leading-tight">{user?.nama ?? 'Pengguna'}</p>
+              <p className="text-[10px] text-ink-400 leading-tight">{user?.role ?? '-'}</p>
             </div>
             <ChevronDown size={14} className="text-ink-400 hidden md:block" />
           </button>
@@ -97,18 +105,18 @@ export function Header({
               <div className="px-4 py-4 border-b border-ink-100">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold">
-                    YT
+                    {userInitials}
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-ink-900">M. Yusuf Badru Tamam</p>
-                    <p className="text-xs text-ink-400">Super Admin</p>
+                    <p className="font-bold text-sm text-ink-900">{user?.nama ?? 'Pengguna'}</p>
+                    <p className="text-xs text-ink-400">{user?.role ?? '-'}</p>
                   </div>
                 </div>
               </div>
               <div className="py-1.5">
                 <div className="px-4 py-2.5 flex items-center justify-between hover:bg-ink-50 cursor-pointer">
                   <span className="text-sm text-ink-700">Profil</span>
-                  <span className="text-xs text-ink-400">Super Admin</span>
+                  <span className="text-xs text-ink-400">{user?.role ?? '-'}</span>
                 </div>
                 <div className="px-4 py-2.5 flex items-center justify-between hover:bg-ink-50 cursor-pointer">
                   <span className="text-sm text-ink-700">Pengaturan</span>

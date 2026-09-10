@@ -22,7 +22,7 @@ import { UsersPage } from '@/pages/UsersPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
-const routes: Record<string, () => JSX.Element> = {
+const routes: Record<string, () => JSX.Element | null> = {
   '/dashboard': DashboardPage,
   '/inventaris': InventarisPage,
   '/gedung': GedungPage,
@@ -39,6 +39,8 @@ const routes: Record<string, () => JSX.Element> = {
   '/users': UsersPage,
 };
 
+const SUPER_ADMIN_ROUTES = ['/users', '/dashboard-management', '/import-data'];
+
 function AppContent() {
   const { path, replace } = useRouter();
   const { user, logout } = useAuth();
@@ -48,8 +50,13 @@ function AppContent() {
   useEffect(() => {
     if (!user && path !== '/login') {
       replace('/login');
+      return;
     }
     if (user && path === '/login') {
+      replace('/dashboard');
+      return;
+    }
+    if (user && user.role !== 'Super Admin' && SUPER_ADMIN_ROUTES.includes(path)) {
       replace('/dashboard');
     }
   }, [user, path, replace]);

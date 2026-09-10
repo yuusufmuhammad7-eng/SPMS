@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from '@/hooks/useRouter';
+import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard, Package, Building2, Car, Wrench, FileText, FolderKanban,
   Wallet, Target, FileCheck, BarChart3, Upload, Settings, Users,
@@ -10,6 +11,7 @@ interface NavItem {
   label: string;
   path: string;
   icon: typeof LayoutDashboard;
+  superAdminOnly?: boolean;
 }
 
 interface NavSection {
@@ -53,14 +55,14 @@ const navSections: NavSection[] = [
     items: [
       { label: 'SOP', path: '/sop', icon: FileCheck },
       { label: 'Laporan', path: '/laporan', icon: BarChart3 },
-      { label: 'Import Data', path: '/import-data', icon: Upload },
+      { label: 'Import Data', path: '/import-data', icon: Upload, superAdminOnly: true },
     ],
   },
   {
     title: 'PENGATURAN',
     items: [
-      { label: 'Dashboard Management', path: '/dashboard-management', icon: Settings },
-      { label: 'User & Role', path: '/users', icon: Users },
+      { label: 'Dashboard Management', path: '/dashboard-management', icon: Settings, superAdminOnly: true },
+      { label: 'User & Role', path: '/users', icon: Users, superAdminOnly: true },
     ],
   },
 ];
@@ -74,6 +76,8 @@ export function Sidebar({
   onCloseMobile: () => void;
 }) {
   const { path, navigate } = useRouter();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'Super Admin';
 
   return (
     <>
@@ -102,13 +106,16 @@ export function Sidebar({
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-5">
-          {navSections.map(section => (
+          {navSections.map(section => {
+            const items = section.items.filter(item => !item.superAdminOnly || isSuperAdmin);
+            if (items.length === 0) return null;
+            return (
             <div key={section.title}>
               {!collapsed && (
                 <p className="px-3 mb-1.5 text-[10px] font-bold text-ink-500 tracking-wider">{section.title}</p>
               )}
               <div className="space-y-0.5">
-                {section.items.map(item => {
+                {items.map(item => {
                   const active = path === item.path || (item.path !== '/dashboard' && path.startsWith(item.path));
                   const Icon = item.icon;
                   return (
@@ -132,7 +139,8 @@ export function Sidebar({
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Collapse toggle */}
